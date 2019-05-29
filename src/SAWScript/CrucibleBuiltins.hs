@@ -45,6 +45,7 @@ module SAWScript.CrucibleBuiltins
     , crucible_fresh_pointer
     , crucible_llvm_unsafe_assume_spec
     , crucible_fresh_var
+    , crucible_sizeof
     , crucible_alloc
     , crucible_alloc_readonly
     , crucible_fresh_expanded_val
@@ -1285,6 +1286,11 @@ llvmTypeAlias _ = Nothing
 symTypeAlias :: Crucible.SymType -> Maybe Crucible.Ident
 symTypeAlias (Crucible.Alias i) = Just i
 symTypeAlias _ = Nothing
+
+crucible_sizeof :: BuiltinContext -> Options -> L.Type -> CrucibleSetupM Int
+crucible_sizeof bic _opt lty = CrucibleSetupM $
+  memTypeForLLVMType bic lty
+  >>= pure . fromIntegral . Crucible.memTypeSize (Crucible.llvmDataLayout ?lc)
 
 crucible_alloc ::
   BuiltinContext ->

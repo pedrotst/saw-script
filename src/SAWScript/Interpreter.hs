@@ -1722,6 +1722,12 @@ primitives = Map.fromList
     , "name is used only for pretty-printing."
     ]
 
+  , prim "crucible_sizeof" "LLVMType -> CrucibleSetup Int"
+    (bicVal crucible_sizeof)
+    Current
+    [ "Compute the size in memory of an LLVM type."
+    ]
+
   , prim "crucible_alloc" "LLVMType -> CrucibleSetup SetupValue"
     (bicVal crucible_alloc)
     Current
