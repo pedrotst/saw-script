@@ -25,3 +25,22 @@ int my_cmp(string_struct ls, string_struct rs){
 
   return strcmp(l, r);
 }
+
+int cmp(char* l, char* r){
+  if(!l && !r)
+    return 0;
+
+  if(!l)
+    return -1;
+  if(!r)
+    return 1;
+
+  return strcmp(l, r);
+}
+
+int64_t my_strlen(char* l){
+  if(!l)
+    return -1;
+
+  return strlen(l);
+}
