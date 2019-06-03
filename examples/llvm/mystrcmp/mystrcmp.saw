@@ -1,0 +1,42 @@
+let alloc_init ty v = do {
+  p <- crucible_alloc ty;
+  crucible_points_to p v;
+  return p;
+};
+
+let ptr_to_fresh n ty = do {
+  x <- crucible_fresh_var n ty;
+  p <- alloc_init ty (crucible_term x);
+  return (x, p);
+};
+
+let str_compare n = do {
+    (st1, p_st1) <- ptr_to_fresh "pt1" (llvm_array n (llvm_int 8));
+    (st2, p_st2) <- ptr_to_fresh "pt2" (llvm_array n (llvm_int 8));
+
+    crucible_execute_func [p_st1, p_st2];
+
+    crucible_return (crucible_term {{ if st1 > st2 then -1 else 1: [30]}});
+};
+
+let mycmp n = do {
+    p1 <- crucible_alloc (llvm_struct "struct.string_struct");
+    p2 <- crucible_alloc (llvm_struct "struct.string_struct");
+
+    (st1, p_st1) <- ptr_to_fresh "l" (llvm_array n (llvm_int 8));
+    crucible_points_to (crucible_elem p1 0) p_st1;
+
+    (st2, p_st2) <- ptr_to_fresh "r" (llvm_array n (llvm_int 8));
+    crucible_points_to (crucible_elem p2 0) p_st2;
+
+    // let xval = crucible_struct [ p_st1 , crucible_term {{ 0: [64] }}, crucible_term {{ 0: [64] }}];
+    // let yval = crucible_struct [ p_st1 , crucible_term {{ 0: [64] }}, crucible_term {{ 0: [64] }}];
+
+    crucible_execute_func [p1, p2];
+};
+
+m <- llvm_load_module "mystrcmp.bc";
+let str_size = 8;
+
+strcmp_ov <- crucible_llvm_unsafe_assume_spec m "strcmp" (str_compare str_size);
+crucible_llvm_verify m "my_cmp" [strcmp_ov] false (mycmp str_size) z3;
